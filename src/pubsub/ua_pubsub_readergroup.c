@@ -909,11 +909,48 @@ verifyAndDecryptNetworkMessage(const UA_Logger *logger, UA_ByteString buffer,
         UA_CHECK_STATUS_WARN(rv, return rv, logger, UA_LOGCATEGORY_SECURITYPOLICY,
                              "PubSub receive. Faulty Nonce set");
 
+        UA_ByteString key, signKey, nonce;
+        // if the token id doesn't match, try using an older key
+        if(securityPolicy->getKeyWithTokenId != NULL) {
+            if(readerGroup->securityTokenId != nm->securityHeader.securityTokenId) {
+                rv = securityPolicy->getKeyWithTokenId(readerGroup->identifier, securityPolicy->storage, securityPolicy,
+                nm->securityHeader.securityTokenId, &key, &signKey, &nonce);
+
+                UA_CHECK_STATUS_ERROR(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
+                "PubSub receive. Issues with getting old keys");
+
+                rv = securityPolicy->setSecurityKeys(channelContext, &signKey, &key, &nonce);
+
+                UA_CHECK_STATUS_ERROR(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
+                "PubSub receive. Couldn't set keys");
+            }
+        }
+
+        UA_CHECK_STATUS_ERROR(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
+                        "PubSub receive. No key found for token id");
+
+
         UA_ByteString toBeDecrypted = {(uintptr_t)(ctx->end - ctx->pos), ctx->pos};
         rv = securityPolicy->symmetricModule.cryptoModule
             .encryptionAlgorithm.decrypt(channelContext, &toBeDecrypted);
         UA_CHECK_STATUS_WARN(rv, return rv, logger, UA_LOGCATEGORY_SECURITYPOLICY,
                              "PubSub receive. Faulty Decryption");
+
+        // reset the keys
+        if(securityPolicy->getKeyWithTokenId != NULL) {
+            if(readerGroup->securityTokenId != nm->securityHeader.securityTokenId) {
+                rv = securityPolicy->getKeyWithTokenId(readerGroup->identifier, securityPolicy->storage, securityPolicy,
+                readerGroup->securityTokenId, &key, &signKey, &nonce);
+            
+                UA_CHECK_STATUS_ERROR(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
+                "PubSub receive. couldn't put current key back keys");
+
+                rv = securityPolicy->setSecurityKeys(channelContext, &signKey, &key, &nonce);
+
+                UA_CHECK_STATUS_ERROR(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
+                "PubSub receive. couldn't put current key back keys (Set security keys)");
+            }
+        }
     }
 
     return UA_STATUSCODE_GOOD;

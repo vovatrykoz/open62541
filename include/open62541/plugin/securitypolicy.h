@@ -382,6 +382,18 @@ struct UA_PubSubSecurityPolicy {
     UA_FUNC_ATTR_WARN_UNUSED_RESULT;
 
     const UA_Logger *logger;
+    
+    UA_StatusCode
+    (*getKeyWithTokenId)(UA_NodeId groupId,
+                        void* storage,
+                        UA_PubSubSecurityPolicy *policy,
+                        const UA_IntegerId tokenId,
+                        UA_ByteString *key,
+                        UA_ByteString *signKey,
+                        UA_ByteString *nonce)
+    UA_FUNC_ATTR_WARN_UNUSED_RESULT;
+
+    void* storage;
 
     /* Deletes the dynamic content of the policy */
     void (*clear)(UA_PubSubSecurityPolicy *policy);
