@@ -874,14 +874,19 @@ verifyAndDecryptNetworkMessage(const UA_Logger *logger, UA_ByteString buffer,
 
     void *channelContext = rg->securityPolicyContext;
     UA_PubSubSecurityPolicy *securityPolicy = rg->config.securityPolicy;
-    UA_CHECK_MEM_ERROR(channelContext, return UA_STATUSCODE_BADINVALIDARGUMENT,
-                       logger, UA_LOGCATEGORY_SERVER,
-                       "PubSub receive. securityPolicyContext must be initialized "
-                       "when security mode is enabled to sign and/or encrypt");
-    UA_CHECK_MEM_ERROR(securityPolicy, return UA_STATUSCODE_BADINVALIDARGUMENT,
-                       logger, UA_LOGCATEGORY_SERVER,
-                       "PubSub receive. securityPolicy must be set when security mode"
-                       "is enabled to sign and/or encrypt");
+
+    if(channelContext == NULL || securityPolicy == NULL) {
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    }
+
+    // UA_CHECK_MEM_ERROR(channelContext, return UA_STATUSCODE_BADINVALIDARGUMENT,
+    //                    logger, UA_LOGCATEGORY_SERVER,
+    //                    "PubSub receive. securityPolicyContext must be initialized "
+    //                    "when security mode is enabled to sign and/or encrypt");
+    // UA_CHECK_MEM_ERROR(securityPolicy, return UA_STATUSCODE_BADINVALIDARGUMENT,
+    //                    logger, UA_LOGCATEGORY_SERVER,
+    //                    "PubSub receive. securityPolicy must be set when security mode"
+    //                    "is enabled to sign and/or encrypt");
 
     UA_ByteString key, signKey, nonceTemp;
     // if the token id doesn't match, try using an older key
@@ -890,8 +895,8 @@ verifyAndDecryptNetworkMessage(const UA_Logger *logger, UA_ByteString buffer,
             rv = securityPolicy->getKeyWithTokenId(rg->head.identifier, securityPolicy->storage, securityPolicy,
             nm->securityHeader.securityTokenId, &key, &signKey, &nonceTemp);
 
-            UA_CHECK_STATUS_ERROR(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
-            "PubSub receive. Issues with getting old keys");
+            UA_CHECK_STATUS_WARN(rv, return rv, logger, UA_LOGCATEGORY_SERVER,
+            "PubSub receive. No keys matching keys found in storage");
 
             rv = securityPolicy->setSecurityKeys(channelContext, &signKey, &key, &nonceTemp);
 
