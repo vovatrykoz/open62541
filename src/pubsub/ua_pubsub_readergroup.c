@@ -879,14 +879,14 @@ verifyAndDecryptNetworkMessage(const UA_Logger *logger, UA_ByteString buffer,
         return UA_STATUSCODE_BADINVALIDARGUMENT;
     }
 
-    // UA_CHECK_MEM_ERROR(channelContext, return UA_STATUSCODE_BADINVALIDARGUMENT,
-    //                    logger, UA_LOGCATEGORY_SERVER,
-    //                    "PubSub receive. securityPolicyContext must be initialized "
-    //                    "when security mode is enabled to sign and/or encrypt");
-    // UA_CHECK_MEM_ERROR(securityPolicy, return UA_STATUSCODE_BADINVALIDARGUMENT,
-    //                    logger, UA_LOGCATEGORY_SERVER,
-    //                    "PubSub receive. securityPolicy must be set when security mode"
-    //                    "is enabled to sign and/or encrypt");
+    UA_CHECK_MEM_ERROR(channelContext, return UA_STATUSCODE_BADINVALIDARGUMENT,
+                       logger, UA_LOGCATEGORY_SERVER,
+                       "PubSub receive. securityPolicyContext must be initialized "
+                       "when security mode is enabled to sign and/or encrypt");
+    UA_CHECK_MEM_ERROR(securityPolicy, return UA_STATUSCODE_BADINVALIDARGUMENT,
+                       logger, UA_LOGCATEGORY_SERVER,
+                       "PubSub receive. securityPolicy must be set when security mode"
+                       "is enabled to sign and/or encrypt");
 
     UA_ByteString key, signKey, nonceTemp;
     // if the token id doesn't match, try using an older key
