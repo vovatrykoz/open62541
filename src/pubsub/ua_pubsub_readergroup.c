@@ -875,10 +875,6 @@ verifyAndDecryptNetworkMessage(const UA_Logger *logger, UA_ByteString buffer,
     void *channelContext = rg->securityPolicyContext;
     UA_PubSubSecurityPolicy *securityPolicy = rg->config.securityPolicy;
 
-    if(channelContext == NULL || securityPolicy == NULL) {
-        return UA_STATUSCODE_BADINVALIDARGUMENT;
-    }
-
     UA_CHECK_MEM_ERROR(channelContext, return UA_STATUSCODE_BADINVALIDARGUMENT,
                        logger, UA_LOGCATEGORY_SERVER,
                        "PubSub receive. securityPolicyContext must be initialized "
