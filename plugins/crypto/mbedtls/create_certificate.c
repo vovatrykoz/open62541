@@ -285,7 +285,7 @@ UA_CreateCertificate(const UA_Logger *logger, const UA_String *subject,
 
     if(mbedtls_x509write_crt_set_key_usage(&crt, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_NON_REPUDIATION
                                             | MBEDTLS_X509_KU_KEY_ENCIPHERMENT | MBEDTLS_X509_KU_DATA_ENCIPHERMENT
-                                            | MBEDTLS_X509_KU_KEY_CERT_SIGN | MBEDTLS_X509_KU_CRL_SIGN) != 0) {
+                                            /*| MBEDTLS_X509_KU_KEY_CERT_SIGN | MBEDTLS_X509_KU_CRL_SIGN*/) != 0) {
         UA_LOG_ERROR(logger, UA_LOGCATEGORY_SECURECHANNEL,
                      "Setting key usage failed.");
         errRet = UA_STATUSCODE_BADINTERNALERROR;
